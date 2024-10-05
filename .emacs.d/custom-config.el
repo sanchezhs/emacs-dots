@@ -322,7 +322,6 @@
   :bind (("C-z" . undo-fu-only-undo)
          ("C-S-z" . undo-fu-only-redo)))
 
-
 ; Smex
 (use-package smex
   :ensure t
@@ -345,4 +344,6 @@
   :config
   (diredfl-global-mode 1))
 
+; Volver a posición anterior del cursor
+(global-set-key (kbd "C-o") 'pop-global-mark)
 
