@@ -22,10 +22,17 @@
 ;; Muestra los números de línea en los buffers
 (global-display-line-numbers-mode t)
 
-;; Modo oscuro
-(load-theme 'doom-tokyo-night t)
+(require 'org)
+ (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 
-;; Habilitar paréntesis coincidentes
+(use-package doom-themes
+  :ensure t
+  :config
+  (load-theme 'doom-tokyo-night t)
+  (doom-themes-visual-bell-config)
+  (doom-themes-org-config))
+
+; Habilitar paréntesis coincidentes
 (show-paren-mode 1)
 
 ;; Habilita el borrado de selección por defecto
@@ -64,6 +71,11 @@
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
+
+
 ;; Habilitar elpy
 (use-package elpy
   :ensure t
@@ -71,24 +83,34 @@
   (elpy-enable)
   :hook (python-mode . elpy-mode)
   :config
-  (setq elpy-rpc-python-command "/home/samuel/Documentos/tws-workspace/monorepo/services/test/venv/bin/python3")
+  (setq elpy-rpc-python-command "/home/samuel/Documentos/tws-workspace/monorepo/services/old-venv/bin/python3")
   (setq elpy-rpc-virtualenv-path 'current)
-  (pyvenv-activate "/home/samuel/Documentos/tws-workspace/monorepo/services/test/venv/")
+  (pyvenv-activate "/home/samuel/Documentos/tws-workspace/monorepo/services/old-venv/")
   (add-hook 'elpy-mode-hook 'flycheck-mode))
 
-;(when (require 'flycheck nil t)
-;  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-;  (add-hook 'elpy-mode-hook 'flycheck-mode))
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
 
-;; Activar python-mode automáticamente para archivos .py
-(add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
-(add-to-list 'company-backends 'company-jedi)
+; Activar python-mode automáticamente para archivos .py
+(use-package company-jedi
+  :ensure t
+  :config
+  (defun my/python-mode-hook ()
+	(add-to-list 'company-backends 'company-jedi))
+  (add-hook 'python-mode-hook 'my/python-mode-hook))
+
+(use-package company
+  :ensure t
+  :init (global-company-mode)
+  :config
+  (setq company-backends '((company-capf company-files)))
+  ;; Ajusta el retardo y la longitud mínima del prefijo
+  (setq company-idle-delay 0.2)
+  (setq company-minimum-prefix-length 1))
 
 (pyvenv-mode 1)
-;(setq elpy-rpc-virtualenv-path 'current)
 
-;(setq elpy-rpc-python-command "/home/samuel/Documentos/tws-workspace/monorepo/services/test/venv/bin/python3")
-;(pyvenv-activate "/home/samuel/Documentos/tws-workspace/monorepo/services/test/venv/")
 
 ;; Configurar Python para usar tabuladores en lugar de espacios
 (setq python-indent-guess-indent-offset nil)  ;; Desactivar la adivinación de la indentación
@@ -136,6 +158,9 @@
   :ensure t)
 (dashboard-setup-startup-hook)
 
+(use-package all-the-icons
+  :ensure t)
+
 ;; Usa iconos de `all-the-icons`
 (setq dashboard-icon-type 'all-the-icons)
 
@@ -149,22 +174,15 @@
 ;; Activa Projectile para que funcione bien con Dashboard
 (setq dashboard-projects-switch-function 'projectile-switch-project)
 
-
 ;; Fonts
 (set-face-attribute 'default nil
-                    :family "FiraCode Nerd Font Mono"  ;; Cambia "Fira Code" por el nombre de la fuente que prefieras
+                    :family "JetBrains Mono"  ;; Cambia "Fira Code" por el nombre de la fuente que prefieras
                     :height 100)         ;; El tamaño de la fuente (120 = 12pt)
 
 ;; Shift + arrows para moverse entre ventanas
 (windmove-default-keybindings)
 
 ;; ;; Projectile
-;; (require 'projectile)
-;; (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-;; (projectile-mode +1)
-;; (setq projectile-generic-command "rg --files --hidden")
-;; (setq projectile-grep-command "rg -n --no-heading --color=never -g '!vendor' -g '!node_modules' -g '!*.min.js' --hidden -e ")
-
 (use-package projectile
   :ensure t
   :init
@@ -242,21 +260,27 @@
                     :weight 'bold)        ;; Texto en negrita
 
 
-(use-package lsp-mode
-  :ensure t
-  :hook ((python-mode . lsp)         ;; Activar lsp en Python
-         (java-mode . lsp)           ;; Activar lsp en Java
-         (js-mode . lsp))            ;; Activar lsp en JavaScript
-  :commands lsp)
-
-(use-package lsp-ui
-  :ensure t
-  :commands lsp-ui-mode
-  :config
-  (setq lsp-ui-sideline-enable t)   ;; Mostrar información en la barra lateral
-  (setq lsp-ui-doc-enable t)        ;; Mostrar documentación emergente
-  (setq lsp-ui-imenu-enable t)      ;; Habilitar un menú de navegación
-  (setq lsp-ui-peek-enable t))      ;; Habilitar la búsqueda visual de definiciones
+;(use-package lsp-mode
+;  :ensure t
+;  :hook ((python-mode . lsp)         ;; Activar lsp en Python
+;		 (java-mode . lsp)           ;; Activar lsp en Java
+;		 (js-mode . lsp))            ;; Activar lsp en JavaScript
+;  :commands lsp
+;  :config
+;  (setq lsp-pyright-auto-import-completions t)  ;; Habilitar autocompletado en Pyright
+;  (setq lsp-completion-enable t)                ;; Habilitar autocompletado
+;  (setq lsp-pyright-disable-organize-imports t) ;; Desactivar "organize imports" si es necesario
+;  (setq lsp-pylsp-plugins-ruff-enabled t)       ;; Mantener Ruff activado para el linting
+;  )
+;
+;(use-package lsp-ui
+;  :ensure t
+;  :commands lsp-ui-mode
+;  :config
+;  (setq lsp-ui-sideline-enable t)   ;; Mostrar información en la barra lateral
+;  (setq lsp-ui-doc-enable t)        ;; Mostrar documentación emergente
+;  (setq lsp-ui-imenu-enable t)      ;; Habilitar un menú de navegación
+;  (setq lsp-ui-peek-enable t))      ;; Habilitar la búsqueda visual de definiciones
 
 ;; Helm
 (use-package helm
@@ -301,8 +325,12 @@
          ("C-c v h" . vterm-split-below))
   :commands vterm)
 
-
 ; Move text
+(use-package move-text
+  :ensure t
+  :config
+  (move-text-default-bindings))  ;; Habilita los atajos predeterminados
+
 (move-text-default-bindings)
 
 ; Re indent text when moving text
@@ -330,7 +358,6 @@
          ("C-c C-c M-x" . execute-extended-command)))
 
 
-;; Dired
 (use-package dired
   :ensure nil
   :bind ("C-c p d" . projectile-dired)
@@ -344,6 +371,17 @@
   :config
   (diredfl-global-mode 1))
 
-; Volver a posición anterior del cursor
-(global-set-key (kbd "C-o") 'pop-global-mark)
+(setq evil-want-C-u-scroll t)
+
+(use-package evil
+  :ensure t
+  :config
+  (evil-mode 1))
+
+(use-package magit
+  :ensure t
+  :commands (magit-status magit-get-current-branch)
+  :config
+  (global-set-key (kbd "C-x g") 'magit-status))
+
 
