@@ -25,6 +25,12 @@
 (require 'org)
  (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 
+(add-hook 'org-mode-hook 'org-indent-mode)
+
+(use-package org-bullets
+  :ensure t
+  :hook (org-mode . org-bullets-mode))
+
 (use-package doom-themes
   :ensure t
   :config
@@ -186,13 +192,14 @@
 (use-package projectile
   :ensure t
   :init
+  (setq projectile-keymap-prefix (kbd "M-p"))
   (projectile-mode +1)
-  ;:bind-keymap
-  ;("C-c p" . projectile-command-map)
   :config
   (setq projectile-generic-command "rg --files --hidden"
         projectile-grep-command "rg -n --no-heading --color=never -g '!vendor' -g '!node_modules' -g '!*.min.js' --hidden -e ")
 )
+(define-key projectile-mode-map (kbd "C-c p p") 'projectile-switch-project)
+(define-key projectile-mode-map (kbd "C-c p f") 'projectile-find-file)
 
 
 ; Ibuffer
@@ -283,17 +290,18 @@
 ;  (setq lsp-ui-peek-enable t))      ;; Habilitar la búsqueda visual de definiciones
 
 ;; Helm
-(use-package helm
-  :ensure t
-  :init
-  (helm-mode 1)
-  :bind (("M-x" . helm-M-x)
-         ("C-x C-f" . helm-find-files)
-         ("C-x b" . helm-mini))
-  :config
-  (setq helm-M-x-fuzzy-match t
-        helm-buffers-fuzzy-matching t
-        helm-recentf-fuzzy-match t))
+;(use-package helm
+;  :ensure t
+;  :init
+;  (helm-mode 1)
+;  :bind (("M-x" . helm-M-x)
+;         ("C-x C-f" . helm-find-files)
+;         ("C-x b" . helm-mini)
+;		 )
+;  :config
+;  (setq helm-M-x-fuzzy-match t
+;        helm-buffers-fuzzy-matching t
+;        helm-recentf-fuzzy-match t))
 
 ;; Ajustes visuales
 (setq helm-M-x-fuzzy-match t)       ;; Activar coincidencia difusa para M-x
@@ -331,8 +339,6 @@
   :config
   (move-text-default-bindings))  ;; Habilita los atajos predeterminados
 
-(move-text-default-bindings)
-
 ; Re indent text when moving text
 (defun indent-region-advice (&rest ignored)
   (let ((deactivate deactivate-mark))
@@ -351,18 +357,45 @@
          ("C-S-z" . undo-fu-only-redo)))
 
 ; Smex
-(use-package smex
-  :ensure t
-  :bind (("M-x" . smex)
-         ("M-X" . smex-major-mode-commands)
-         ("C-c C-c M-x" . execute-extended-command)))
+;(use-package smex
+;  :ensure t
+;  :bind (("M-x" . smex)
+;         ("M-X" . smex-major-mode-commands)
+;         ("C-c C-c M-x" . execute-extended-command)))
 
+(use-package ivy
+  :ensure t
+  :diminish
+  :bind (("M-x" . counsel-M-x)  ;; Reemplazar Smex con Counsel-M-x
+         ("C-x C-f" . counsel-find-file)  ;; Mejor búsqueda de archivos
+         ("C-c p p" . counsel-projectile-switch-project)
+         ("C-c p f" . counsel-projectile-find-file))
+  :config
+  (ivy-mode 1)  ;; Activar Ivy globalmente
+  (setq ivy-use-virtual-buffers t)
+  (setq enable-recursive-minibuffers t))
+
+(use-package counsel
+  :ensure t)
+
+(use-package counsel-projectile
+  :ensure t
+  :config
+  (counsel-projectile-mode))
+
+(use-package imenu-list
+  :ensure t
+  :bind ("M-i" . imenu-list-smart-toggle)  ;; Atajo para abrir/cerrar imenu-list
+  :config
+  (setq imenu-list-auto-resize nil)  ;; Evita que la ventana cambie de tamaño automáticamente
+  (setq imenu-list-position 'right))  ;; Muestra imenu-list a la derecha
 
 (use-package dired
   :ensure nil
   :bind ("C-c p d" . projectile-dired)
   :config
-  (setq dired-listing-switches "-lah --group-directories-first"))
+  (setq dired-listing-switches "-lah --group-directories-first")
+  (setq projectile-project-search-path '("~/Documentos/tws-workspace")))
 
 (define-key dired-mode-map (kbd "* .") 'dired-mark-files-regexp)
 
