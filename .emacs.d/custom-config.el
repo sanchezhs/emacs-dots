@@ -369,7 +369,8 @@
   :bind (("M-x" . counsel-M-x)  ;; Reemplazar Smex con Counsel-M-x
          ("C-x C-f" . counsel-find-file)  ;; Mejor búsqueda de archivos
          ("C-c p p" . counsel-projectile-switch-project)
-         ("C-c p f" . counsel-projectile-find-file))
+         ("C-c p f" . counsel-projectile-find-file)
+		 ("C-s" . swiper-isearch))
   :config
   (ivy-mode 1)  ;; Activar Ivy globalmente
   (setq ivy-use-virtual-buffers t)
