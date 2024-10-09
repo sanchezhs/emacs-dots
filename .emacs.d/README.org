@@ -1,0 +1,463 @@
+#+TITLE: Emacs Config
+
+* Paquetes
+
+Esta sección maneja los repositorios de paquetes y la inicialización de paquetes.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'package)
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+  (package-initialize)
+
+  (add-to-list 'package-archives
+               '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+
+  ;; Use Package
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+
+  (require 'use-package)
+  (setq use-package-always-ensure t)  ;; Instalar automáticamente los paquetes que falten
+
+  (use-package auto-package-update
+    :ensure t
+    :config
+    (setq auto-package-update-delete-old-versions t)  ;; Elimina las versiones antiguas
+    (setq auto-package-update-interval 7)             ;; Actualiza los paquetes cada 7 días
+    (auto-package-update-maybe))                      ;; Actualiza si es necesario al iniciar Emacs
+
+#+END_SRC
+
+* Interfaz
+
+Configura el tema y ajustes visuales adicionales.
+
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-message t)           ;; Desactiva la pantalla de bienvenida
+  (global-display-line-numbers-mode t)       ;; Muestra los números de línea en los buffers
+  (show-paren-mode 1)                        ;; Habilitar paréntesis coincidentes
+  (delete-selection-mode 1)                  ;; Habilita el borrado de selección por defecto
+  (menu-bar-mode -1)                         ;; Deshabilita barra de menu
+  (tool-bar-mode -1)                         ;; Deshabilita barra de herramientas
+  (scroll-bar-mode -1)                       ;; Deshabilita barra scroll
+  (ido-mode t)                               ;; Habilita el autocompletado de comandos
+  (global-font-lock-mode t)                  ;; Habilitar el modo de resaltado de sintaxis
+  (global-hl-line-mode +1)                   ;; Resaltado de línea actual
+
+  (set-face-attribute 'minibuffer-prompt nil
+                      :foreground "cyan"     ;; Color del texto del prompt
+                      :background "black"    ;; Fondo del minibuffer
+                      :weight 'bold)         ;; Texto en negrita
+
+  (set-face-attribute 'default nil
+                      :family "JetBrains Mono"
+                      :height 100)
+
+  (use-package doom-themes
+    :ensure t
+    :config
+    (load-theme 'doom-tokyo-night t)
+    (doom-themes-visual-bell-config)
+    (doom-themes-org-config))
+
+  (use-package doom-modeline
+    :ensure t
+    :init (doom-modeline-mode 1)
+    :config
+    (setq doom-modeline-vcs-max-length 40))
+
+  (use-package dashboard
+    :ensure t
+    :config
+    (dashboard-setup-startup-hook)
+    (setq dashboard-icon-type 'all-the-icons)
+    (setq dashboard-items '((recents  . 5)   ;; Muestra los archivos recientes
+                            (projects . 5))) ;; Muestra los proyectos recientes de Projectile
+    (setq dashboard-startup-banner 'logo)    ;; Mostrar un banner
+    (setq dashboard-projects-switch-function 'projectile-switch-project))
+
+  (use-package all-the-icons
+    :ensure t)
+#+END_SRC
+
+
+* Comportamiento
+
+Configura la indentación y el uso de tabuladores.
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default indent-tabs-mode nil) ;; Usar espacios en lugar de tabuladores
+  (setq-default tab-width 4)          ;; Establece el número de espacios para indentación
+
+  (setq backup-directory-alist `(("." . "~/.emacs-saves")))
+  (setq backup-by-copying t)          ;; Evita sobrescribir archivos originales
+
+  (setq select-enable-clipboard t)    ;; Habilita copiar y pegar con el portapapeles
+  (setq select-enable-primary t)
+  (windmove-default-keybindings)      ;; Shift + flechas para moverse entre ventanas
+#+END_SRC
+
+
+* Configuración de Org Mode
+
+Configura Org Mode y activa org-bullets.
+
+#+BEGIN_SRC emacs-lisp
+(require 'org)
+(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+
+(add-hook 'org-mode-hook 'org-indent-mode)
+
+(use-package org-bullets
+  :ensure t
+  :hook (org-mode . org-bullets-mode))
+#+END_SRC
+
+* Configuración de Python
+
+Ajusta la indentación y el uso de tabuladores en Python.
+
+#+BEGIN_SRC emacs-lisp
+(setq python-indent-guess-indent-offset nil)  ;; Desactivar la adivinación de la indentación
+(setq-default indent-tabs-mode t)             ;; Usar tabuladores en lugar de espacios
+(setq-default tab-width 4)                    ;; Establecer el tamaño del tabulador en 4 espacios
+(setq python-indent-offset 4)                 ;; Establecer el nivel de indentación de Python en 4 espacios
+
+(add-hook 'python-mode-hook
+          (lambda ()
+            (setq indent-tabs-mode t)         ;; Usar tabuladores en Python
+            (setq python-indent 4)            ;; Tamaño de la indentación en Python
+            (setq tab-width 4)))              ;; Ancho del tabulador
+#+END_SRC
+
+* Whitespace Mode
+
+Configura la visualización de espacios y tabuladores.
+
+#+BEGIN_SRC emacs-lisp
+(global-whitespace-mode 1)                   ;; Habilitar whitespace-mode globalmente
+
+(setq whitespace-style '(face tabs spaces trailing space-mark tab-mark))
+
+(setq whitespace-display-mappings
+      '(
+        (space-mark 32 [183] [46])           ; Espacio como un punto medio (·)
+        (tab-mark 9 [9655 9] [92 9])         ; Tabulador como una flecha (→)
+       ))
+
+(custom-set-faces
+ '(whitespace-space ((t (:foreground "gray20"))))  ;; Espacios en gris claro
+ '(whitespace-tab ((t (:foreground "gray20"))))    ;; Tabuladores en gris claro
+ '(whitespace-trailing ((t (:background "red" :foreground "yellow" :weight bold)))))  ;; Espacios finales en rojo
+
+(add-hook 'prog-mode-hook 'whitespace-mode)  ;; Mostrar en modos de programación
+#+END_SRC
+
+* Projectile
+
+Configura Projectile para la gestión de proyectos.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile
+    :ensure t
+    :init
+    (setq projectile-keymap-prefix (kbd "M-p"))
+    (projectile-mode +1)
+    :config
+    (setq projectile-generic-command "rg --files --hidden"
+          projectile-grep-command "rg -n --no-heading --color=never -g '!vendor' -g '!node_modules' -g '!*.min.js' --hidden -e ")
+  )
+
+  (define-key projectile-mode-map (kbd "C-c p p") 'projectile-switch-project)
+  (define-key projectile-mode-map (kbd "C-c p f") 'projectile-find-file)
+
+  (global-set-key (kbd "C-c p d") 'projectile-dired)
+#+END_SRC
+
+* Ibuffer
+
+Configura Ibuffer para una mejor gestión de buffers.
+
+#+BEGIN_SRC emacs-lisp
+(setq ibuffer-saved-filter-groups
+      '(("default"
+         ("Back" (mode . python-mode))
+         ("Front - TS" (filename . "\\.ts$"))
+         ("Front - HTML" (filename . "\\.html$"))
+         ("Front - CSS" (or (filename . "\\.css$")
+                            (filename . "\\.sass$")
+                            (filename . "\\.scss$")))
+         ("Dired" (mode . dired-mode))
+         ("Emacs Config" (or
+                          (filename . ".emacs")
+                          (filename . "init.el")))
+         ("Org" (mode . org-mode)))))
+
+(add-hook 'ibuffer-mode-hook
+          (lambda ()
+            (ibuffer-switch-to-saved-filter-groups "default")))
+
+(setq ibuffer-formats
+      '((mark modified read-only " "
+              (name 18 18 :left :elide)  ;; Nombre del buffer (18 caracteres)
+              " "
+              (size 9 -1 :right)         ;; Tamaño del buffer
+              " "
+              (mode 16 16 :left :elide)  ;; Modo del buffer
+              " "
+              filename-and-process)))    ;; Ruta completa del archivo
+
+(global-set-key (kbd "C-x C-b") 'ibuffer)  ;; Reemplaza `list-buffers` por `ibuffer`
+#+END_SRC
+
+* Spacious Padding
+
+Configura el padding para una interfaz más espaciosa.
+
+#+BEGIN_SRC emacs-lisp
+(use-package spacious-padding
+  :ensure t)
+
+(setq spacious-padding-widths
+      '( :internal-border-width 0
+         :header-line-width 4
+         :mode-line-width 4
+         :tab-width 4
+         :right-divider-width 30
+         :scroll-bar-width 8
+         :fringe-width 8))
+
+(setq spacious-padding-subtle-mode-line
+      `( :mode-line-active 'default
+         :mode-line-inactive vertical-border))
+
+(spacious-padding-mode 1)
+#+END_SRC
+
+* Configuración de LSP
+
+Configura lsp-mode para varios lenguajes.
+
+#+BEGIN_SRC emacs-lisp
+(pyvenv-mode 1)
+
+(use-package lsp-mode
+  :ensure t
+  :hook ((typescript-mode . lsp-deferred)    ;; Activa lsp en TypeScript
+         (python-mode . lsp-deferred)
+         (js-mode . lsp-deferred)
+         (html-mode . lsp-deferred))
+  :commands (lsp lsp-deferred)
+  :config
+  (setq lsp-prefer-flymake nil)
+  (setq lsp-pylsp-plugins-ruff-enabled t)
+  (setq lsp-pylsp-plugins-pycodestyle-enabled nil)  ;; Desactivar pycodestyle si usas ruff
+  (setq lsp-pylsp-plugins-pyflakes-enabled nil)     ;; Desactivar pyflakes si usas ruff
+  (setq lsp-pylsp-plugins-mccabe-enabled nil))      ;; Desactivar otros linters innecesarios
+
+(setq lsp-enable-file-watchers nil)
+#+END_SRC
+
+* Flycheck
+
+Configura Flycheck para el linting.
+
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode)
+  :config
+  (flycheck-add-mode 'javascript-eslint 'typescript-mode)
+  (setq-default flycheck-disabled-checkers '(typescript-tslint python-flake8 python-codestyle))
+  (flycheck-add-next-checker 'python-mypy 'python-ruff))
+#+END_SRC
+
+* LSP UI
+
+Configura lsp-ui para una mejor integración visual.
+
+#+BEGIN_SRC emacs-lisp
+(use-package lsp-ui
+  :ensure t
+  :commands lsp-ui-mode
+  :config
+  (setq lsp-ui-doc-enable t)           ;; Muestra documentación emergente
+  (setq lsp-ui-doc-position 'at-point) ;; Posición de la documentación
+  (setq lsp-ui-sideline-show-hover t)) ;; Muestra detalles al pasar el cursor
+
+(setq lsp-headerline-breadcrumb-enable nil)
+(setq lsp-ui-sideline-enable nil)
+#+END_SRC
+
+* Company Mode
+
+Configura Company para autocompletado.
+
+#+BEGIN_SRC emacs-lisp
+(use-package company
+  :ensure t
+  :hook (typescript-mode . company-mode)
+  :config
+  (setq company-minimum-prefix-length 1
+        company-idle-delay 0.0)) ;; Completado rápido
+#+END_SRC
+
+* Typescript Mode
+
+Configura el modo de TypeScript.
+
+#+BEGIN_SRC emacs-lisp
+(use-package typescript-mode
+  :ensure t
+  :mode ("\\.ts\\'" . typescript-mode)
+  :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2))  ;; Ajusta el nivel de indentación
+
+(with-eval-after-load 'typescript-mode
+  (add-hook 'typescript-mode-hook #'lsp))
+
+(setq lsp-log-io nil)  ;; Evita impacto en rendimiento
+#+END_SRC
+
+* VTerm
+
+Configura vterm y asigna atajos para abrirlo.
+
+#+BEGIN_SRC emacs-lisp
+(defun vterm-split-right ()
+  "Divide la ventana actual verticalmente y abre vterm en la nueva ventana."
+  (interactive)
+  (split-window-right)
+  (other-window 1)
+  (vterm))
+
+(global-set-key (kbd "C-c v v") 'vterm-split-right)
+
+(defun vterm-split-below ()
+  "Divide la ventana actual horizontalmente y abre vterm en la nueva ventana."
+  (interactive)
+  (split-window-below)
+  (other-window 1)
+  (vterm))
+
+(global-set-key (kbd "C-c v h") 'vterm-split-below)
+(global-set-key (kbd "M-i") 'imenu)
+
+(use-package vterm
+  :ensure t
+  :bind (("C-c v v" . vterm-split-right)
+         ("C-c v h" . vterm-split-below))
+  :commands vterm)
+#+END_SRC
+
+* Move Text
+
+Permite mover texto hacia arriba y abajo.
+
+#+BEGIN_SRC emacs-lisp
+(use-package move-text
+  :ensure t
+  :config
+  (move-text-default-bindings))
+
+(defun indent-region-advice (&rest ignored)
+  (let ((deactivate deactivate-mark))
+    (if (region-active-p)
+        (indent-region (region-beginning) (region-end))
+      (indent-region (line-beginning-position) (line-end-position)))
+    (setq deactivate-mark deactivate)))
+
+(advice-add 'move-text-up :after 'indent-region-advice)
+(advice-add 'move-text-down :after 'indent-region-advice)
+#+END_SRC
+
+* Ivy y Counsel
+
+Reemplaza Smex con Ivy y Counsel para una mejor experiencia.
+
+#+BEGIN_SRC emacs-lisp
+(use-package ivy
+  :ensure t
+  :bind (("M-x" . counsel-M-x)             ;; Reemplazar Smex con Counsel-M-x
+         ("C-x C-f" . counsel-find-file)   ;; Mejor búsqueda de archivos
+         ("C-c p p" . counsel-projectile-switch-project)
+         ("C-c p f" . counsel-projectile-find-file)
+         ("C-s" . swiper-isearch))
+  :config
+  (ivy-mode 1)                             ;; Activar Ivy globalmente
+  (setq ivy-use-virtual-buffers t)
+  (setq enable-recursive-minibuffers t))
+
+(use-package counsel
+  :ensure t)
+
+(use-package counsel-projectile
+  :ensure t
+  :config
+  (counsel-projectile-mode))
+#+END_SRC
+
+* Imenu List
+
+Configura imenu-list para navegación.
+
+#+BEGIN_SRC emacs-lisp
+(use-package imenu-list
+  :ensure t
+  :bind ("M-i" . imenu-list-smart-toggle)  ;; Atajo para abrir/cerrar imenu-list
+  :config
+  (setq imenu-list-auto-resize nil)        ;; Evita que la ventana cambie de tamaño automáticamente
+  (setq imenu-list-position 'right))       ;; Muestra imenu-list a la derecha
+#+END_SRC
+
+* Configuración de Dired
+
+Ajustes para Dired y su integración con Projectile.
+
+#+BEGIN_SRC emacs-lisp
+(use-package dired
+  :ensure nil
+  :bind ("C-c p d" . projectile-dired)
+  :config
+  (setq dired-listing-switches "-lah --group-directories-first")
+  (setq projectile-project-search-path '("~/Documentos/tws-workspace")))
+
+(define-key dired-mode-map (kbd "* .") 'dired-mark-files-regexp)
+
+(use-package diredfl
+  :ensure t
+  :config
+  (diredfl-global-mode 1))
+#+END_SRC
+
+* Evil Mode
+
+Configura Evil Mode para usar atajos de Vim.
+
+#+BEGIN_SRC emacs-lisp
+(setq evil-want-C-u-scroll t)
+
+(use-package evil
+  :ensure t
+  :config
+  (evil-mode 1))
+
+(define-key evil-normal-state-map (kbd "gd") 'lsp-find-definition)
+(define-key evil-normal-state-map (kbd "gr") 'lsp-find-references)
+(define-key evil-normal-state-map (kbd "gi") 'lsp-find-implementation)
+#+END_SRC
+
+* Magit
+
+Configura Magit para integración con Git.
+
+#+BEGIN_SRC emacs-lisp
+(use-package magit
+  :ensure t
+  :commands (magit-status magit-get-current-branch)
+  :config
+  (global-set-key (kbd "C-x g") 'magit-status))
+#+END_SRC
+
