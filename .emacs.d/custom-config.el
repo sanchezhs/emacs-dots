@@ -16,6 +16,14 @@
 (setq use-package-always-ensure t)  ;; Instalar automáticamente los paquetes que falten
 
 
+(use-package auto-package-update
+  :ensure t
+  :config
+  (setq auto-package-update-delete-old-versions t)  ;; Elimina las versiones antiguas
+  (setq auto-package-update-interval 7)  ;; Actualiza los paquetes cada 7 días
+  (auto-package-update-maybe))  ;; Actualiza si es necesario al iniciar Emacs
+
+
 ; Desactiva la pantalla de bienvenida
 (setq inhibit-startup-message t)
 
@@ -77,45 +85,24 @@
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 
-(use-package flycheck
-  :ensure t
-  :init (global-flycheck-mode))
 
 
 ;; Habilitar elpy
-(use-package elpy
-  :ensure t
-  :init
-  (elpy-enable)
-  :hook (python-mode . elpy-mode)
-  :config
-  (setq elpy-rpc-python-command "/home/samuel/Documentos/tws-workspace/monorepo/services/old-venv/bin/python3")
-  (setq elpy-rpc-virtualenv-path 'current)
-  (pyvenv-activate "/home/samuel/Documentos/tws-workspace/monorepo/services/old-venv/")
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
+;(use-package elpy
+;  :ensure t
+;  :init
+;  (elpy-enable)
+;  :hook (python-mode . elpy-mode)
+;  :config
+;  (setq elpy-rpc-python-command "/home/samuel/Documentos/tws-workspace/monorepo/services/old-venv/bin/python3")
+;  (setq elpy-rpc-virtualenv-path 'current)
+;  (pyvenv-activate "/home/samuel/Documentos/tws-workspace/monorepo/services/old-venv/")
+;  (add-hook 'elpy-mode-hook 'flycheck-mode))
 
-(when (require 'flycheck nil t)
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
+;(when (require 'flycheck nil t)
+;  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+;  (add-hook 'elpy-mode-hook 'flycheck-mode))
 
-; Activar python-mode automáticamente para archivos .py
-(use-package company-jedi
-  :ensure t
-  :config
-  (defun my/python-mode-hook ()
-	(add-to-list 'company-backends 'company-jedi))
-  (add-hook 'python-mode-hook 'my/python-mode-hook))
-
-(use-package company
-  :ensure t
-  :init (global-company-mode)
-  :config
-  (setq company-backends '((company-capf company-files)))
-  ;; Ajusta el retardo y la longitud mínima del prefijo
-  (setq company-idle-delay 0.2)
-  (setq company-minimum-prefix-length 1))
-
-(pyvenv-mode 1)
 
 
 ;; Configurar Python para usar tabuladores en lugar de espacios
@@ -205,19 +192,18 @@
 ; Ibuffer
 ;; Groups
 (setq ibuffer-saved-filter-groups
-      '(("default"
-         ("Python" (mode . python-mode))
-         ("Emacs Config" (or
-                          (filename . ".emacs")
-                          (filename . "init.el")))
-         ("Org" (mode . org-mode))
-         ("Dired" (mode . dired-mode))
-         ("Programming" (or
-                         (mode . c-mode)
-                         (mode . c++-mode)
-                         (mode . java-mode)
-                         (mode . js-mode)
-                         (mode . html-mode))))))
+	  '(("default"
+		 ("Back" (mode . python-mode))
+		 ("Front - TS" (filename . "\\.ts$"))
+		 ("Front - HTML" (filename . "\\.html$"))
+		 ("Front - CSS" (or (filename . "\\.css$")
+							(filename . "\\.sass$")
+							(filename . "\\.scss$")))
+		 ("Dired" (mode . dired-mode))
+		 ("Emacs Config" (or
+						  (filename . ".emacs")
+						  (filename . "init.el")))
+		 ("Org" (mode . org-mode)))))
 
 (add-hook 'ibuffer-mode-hook
           (lambda ()
@@ -289,19 +275,83 @@
 ;  (setq lsp-ui-imenu-enable t)      ;; Habilitar un menú de navegación
 ;  (setq lsp-ui-peek-enable t))      ;; Habilitar la búsqueda visual de definiciones
 
-;; Helm
-;(use-package helm
-;  :ensure t
-;  :init
-;  (helm-mode 1)
-;  :bind (("M-x" . helm-M-x)
-;         ("C-x C-f" . helm-find-files)
-;         ("C-x b" . helm-mini)
-;		 )
-;  :config
-;  (setq helm-M-x-fuzzy-match t
-;        helm-buffers-fuzzy-matching t
-;        helm-recentf-fuzzy-match t))
+; Activar python-mode automáticamente para archivos .py
+;; (use-package company-jedi
+;;   :ensure t
+;;   :config
+;;   (defun my/python-mode-hook ()
+;; 	(add-to-list 'company-backends 'company-jedi))
+;;   (add-hook 'python-mode-hook 'my/python-mode-hook))
+
+(pyvenv-mode 1)
+
+(use-package lsp-mode
+  :ensure t
+  :hook ((typescript-mode . lsp-deferred)			;; Activa lsp en archivos TypeScript
+		 (python-mode . lsp-deferred)
+         (js-mode . lsp-deferred)
+		 (html-mode . lsp-deferred))				;; Si también trabajas con JavaScript
+  :commands (lsp lsp-deferred)
+  :config
+  (setq lsp-prefer-flymake nil)
+  (setq lsp-pylsp-plugins-ruff-enabled t)
+  (setq lsp-pylsp-plugins-pycodestyle-enabled nil)	;; Desactivar pycodestyle si usas ruff
+  (setq lsp-pylsp-plugins-pyflakes-enabled nil)	;; Desactivar pyflakes si usas ruff
+  (setq lsp-pylsp-plugins-mccabe-enabled nil)		;; Desactivar otros linters que no necesites
+)
+
+(setq lsp-enable-file-watchers nil)
+
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode)
+  :config
+  (flycheck-add-mode 'javascript-eslint 'typescript-mode)
+  (setq-default flycheck-disabled-checkers '(typescript-tslint python-flake8 python-codestyle))
+  (flycheck-add-next-checker 'python-mypy 'python-ruff)
+)
+
+(use-package lsp-ui
+  :ensure t
+  :commands lsp-ui-mode
+  :config
+  (setq lsp-ui-doc-enable t           ;; Muestra documentación emergente
+        lsp-ui-doc-position 'at-point ;; Posición de la documentación
+        lsp-ui-sideline-show-hover t)) ;; Muestra detalles al pasar el cursor
+
+(use-package company
+  :ensure t
+  :hook (typescript-mode . company-mode)
+  :config
+  (setq company-minimum-prefix-length 1
+        company-idle-delay 0.0)) ;; Completado rápido
+
+(use-package typescript-mode
+  :ensure t
+  :mode ("\\.ts\\'" . typescript-mode)
+  :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2))  ;; Ajusta el nivel de indentación
+
+(with-eval-after-load 'typescript-mode (add-hook 'typescript-mode-hook #'lsp))
+(setq lsp-log-io nil) ; if set to true can cause a performance hit
+
+;; (use-package ng2-mode
+;;   :after typescript-mode
+;;   :hook
+;;   (ng2-html-mode . web-mode)
+;;   :config
+;;   (setq lsp-clients-angular-language-server-command
+;;       '("node"
+;;         "/usr/lib/node_modules/@angular/language-server"
+;;         "--ngProbeLocations"
+;;         "/usr/lib/node_modules"
+;;         "--tsProbeLocations"
+;;         "/usr/lib/node_modules"
+;;         "--stdio")))
+
+(setq lsp-headerline-breadcrumb-enable nil)
+(setq lsp-ui-sideline-enable nil)
 
 ;; Ajustes visuales
 (setq helm-M-x-fuzzy-match t)       ;; Activar coincidencia difusa para M-x
@@ -365,7 +415,6 @@
 
 (use-package ivy
   :ensure t
-  :diminish
   :bind (("M-x" . counsel-M-x)  ;; Reemplazar Smex con Counsel-M-x
          ("C-x C-f" . counsel-find-file)  ;; Mejor búsqueda de archivos
          ("C-c p p" . counsel-projectile-switch-project)
@@ -411,6 +460,11 @@
   :ensure t
   :config
   (evil-mode 1))
+
+(define-key evil-normal-state-map (kbd "gd") 'lsp-find-definition)
+(define-key evil-normal-state-map (kbd "gr") 'lsp-find-references)
+(define-key evil-normal-state-map (kbd "gi") 'lsp-find-implementation)
+
 
 (use-package magit
   :ensure t
