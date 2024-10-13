@@ -57,7 +57,7 @@ Configura el tema y ajustes visuales adicionales.
   (use-package doom-themes
     :ensure t
     :config
-    (load-theme 'doom-tokyo-night t)
+    ;(load-theme 'doom-dark+ t)
     (doom-themes-visual-bell-config)
     (doom-themes-org-config))
 
@@ -119,26 +119,54 @@ Configura Org Mode y activa org-bullets.
 Ajusta la indentación y el uso de tabuladores en Python.
 
 #+BEGIN_SRC emacs-lisp
-(setq python-indent-guess-indent-offset nil)  ;; Desactivar la adivinación de la indentación
-(setq-default indent-tabs-mode t)             ;; Usar tabuladores en lugar de espacios
-(setq-default tab-width 4)                    ;; Establecer el tamaño del tabulador en 4 espacios
-(setq python-indent-offset 4)                 ;; Establecer el nivel de indentación de Python en 4 espacios
+  (setq python-indent-guess-indent-offset nil)  ;; Desactivar la adivinación de la indentación
+  (setq-default indent-tabs-mode t)             ;; Usar tabuladores en lugar de espacios
+  (setq-default tab-width 4)                    ;; Establecer el tamaño del tabulador en 4 espacios
+  (setq python-indent-offset 4)                 ;; Establecer el nivel de indentación de Python en 4 espacios
 
-(add-hook 'python-mode-hook
-          (lambda ()
-            (setq indent-tabs-mode t)         ;; Usar tabuladores en Python
-            (setq python-indent 4)            ;; Tamaño de la indentación en Python
-            (setq tab-width 4)))              ;; Ancho del tabulador
-#+END_SRC
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (setq indent-tabs-mode t)         ;; Usar tabuladores en Python
+              (setq python-indent 4)            ;; Tamaño de la indentación en Python
+              (setq tab-width 4)))              ;; Ancho del tabulador
+
+
+  (defvar @-dotenv-file-name ".env"
+    "The name of the .env file."
+    )
+
+  (defun @-find-env-file ()
+    "Find the closest .env file in the directory hierarchy."
+
+    (let* ((env-file-directory (locate-dominating-file "." @-dotenv-file-name))
+           (file-name (concat env-file-directory @-dotenv-file-name)))
+      (when (file-exists-p file-name)
+        file-name))
+    )
+
+  (defun @-set-project-env ()
+    "Export all environment variables in the closest .env file."
+
+    (let ((env-file (@-find-env-file)))
+      (when env-file
+        (load-env-vars env-file)))
+    )
+
+  (use-package load-env-vars
+    :ensure t
+    :after projectile
+    )
+  #+END_SRC
 
 * Whitespace Mode
 
 Configura la visualización de espacios y tabuladores.
 
 #+BEGIN_SRC emacs-lisp
-(global-whitespace-mode 1)                   ;; Habilitar whitespace-mode globalmente
+;(global-whitespace-mode 1)                   ;; Habilitar whitespace-mode globalmente
 
 (setq whitespace-style '(face tabs spaces trailing space-mark tab-mark))
+
 
 (setq whitespace-display-mappings
       '(
@@ -151,7 +179,7 @@ Configura la visualización de espacios y tabuladores.
  '(whitespace-tab ((t (:foreground "gray20"))))    ;; Tabuladores en gris claro
  '(whitespace-trailing ((t (:background "red" :foreground "yellow" :weight bold)))))  ;; Espacios finales en rojo
 
-(add-hook 'prog-mode-hook 'whitespace-mode)  ;; Mostrar en modos de programación
+;(add-hook 'prog-mode-hook 'whitespace-mode)  ;; Mostrar en modos de programación
 #+END_SRC
 
 * Projectile
@@ -173,6 +201,10 @@ Configura Projectile para la gestión de proyectos.
   (define-key projectile-mode-map (kbd "C-c p f") 'projectile-find-file)
 
   (global-set-key (kbd "C-c p d") 'projectile-dired)
+
+  (add-hook 'projectile-mode-hook #'@-set-project-env)
+  (add-hook 'projectile-after-switch-project-hook #'@-set-project-env)
+
 #+END_SRC
 
 * Ibuffer
@@ -240,23 +272,33 @@ Configura el padding para una interfaz más espaciosa.
 Configura lsp-mode para varios lenguajes.
 
 #+BEGIN_SRC emacs-lisp
-(pyvenv-mode 1)
-
-(use-package lsp-mode
+(use-package pyvenv
   :ensure t
-  :hook ((typescript-mode . lsp-deferred)    ;; Activa lsp en TypeScript
-         (python-mode . lsp-deferred)
-         (js-mode . lsp-deferred)
-         (html-mode . lsp-deferred))
-  :commands (lsp lsp-deferred)
   :config
-  (setq lsp-prefer-flymake nil)
-  (setq lsp-pylsp-plugins-ruff-enabled t)
-  (setq lsp-pylsp-plugins-pycodestyle-enabled nil)  ;; Desactivar pycodestyle si usas ruff
-  (setq lsp-pylsp-plugins-pyflakes-enabled nil)     ;; Desactivar pyflakes si usas ruff
-  (setq lsp-pylsp-plugins-mccabe-enabled nil))      ;; Desactivar otros linters innecesarios
+  (pyvenv-mode t)
 
-(setq lsp-enable-file-watchers nil)
+  ;; Set correct Python interpreter
+  (setq pyvenv-post-activate-hooks
+        (list (lambda ()
+                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python3")))))
+  (setq pyvenv-post-deactivate-hooks
+        (list (lambda ()
+                (setq python-shell-interpreter "python3")))))
+  (use-package lsp-mode
+    :ensure t
+    :hook ((typescript-mode . lsp-deferred)    ;; Activa lsp en TypeScript
+           (python-mode . lsp-deferred)
+           (js-mode . lsp-deferred)
+           (html-mode . lsp-deferred))
+    :commands (lsp lsp-deferred)
+    :config
+    (setq lsp-prefer-flymake nil)
+    (setq lsp-pylsp-plugins-ruff-enabled t)
+    (setq lsp-pylsp-plugins-pycodestyle-enabled nil)  ;; Desactivar pycodestyle si usas ruff
+    (setq lsp-pylsp-plugins-pyflakes-enabled nil)     ;; Desactivar pyflakes si usas ruff
+    (setq lsp-pylsp-plugins-mccabe-enabled nil))      ;; Desactivar otros linters innecesarios
+
+  (setq lsp-enable-file-watchers nil)
 #+END_SRC
 
 * Flycheck
@@ -268,9 +310,27 @@ Configura Flycheck para el linting.
   :ensure t
   :init (global-flycheck-mode)
   :config
-  (flycheck-add-mode 'javascript-eslint 'typescript-mode)
-  (setq-default flycheck-disabled-checkers '(typescript-tslint python-flake8 python-codestyle))
-  (flycheck-add-next-checker 'python-mypy 'python-ruff))
+  ;; Deshabilitar checkers no deseados globalmente
+  (setq-default flycheck-disabled-checkers
+                '(python-pylint
+                  python-pycompile
+                  python-mypy
+                  python-flake8
+                  python-pycodestyle
+                  python-pyls))
+
+  ;; Deshabilitar el checker 'lsp' en python-mode
+  (defun my/disable-lsp-flycheck-in-python ()
+    (when (eq major-mode 'python-mode)
+      (setq-local flycheck-disabled-checkers
+                  (append flycheck-disabled-checkers '(lsp)))))
+
+  (add-hook 'flycheck-mode-hook #'my/disable-lsp-flycheck-in-python)
+
+  ;; Establecer python-ruff como el checker predeterminado para python-mode
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (setq flycheck-checker 'python-ruff))))
 #+END_SRC
 
 * LSP UI
@@ -278,16 +338,19 @@ Configura Flycheck para el linting.
 Configura lsp-ui para una mejor integración visual.
 
 #+BEGIN_SRC emacs-lisp
-(use-package lsp-ui
-  :ensure t
-  :commands lsp-ui-mode
-  :config
-  (setq lsp-ui-doc-enable t)           ;; Muestra documentación emergente
-  (setq lsp-ui-doc-position 'at-point) ;; Posición de la documentación
-  (setq lsp-ui-sideline-show-hover t)) ;; Muestra detalles al pasar el cursor
+  (use-package lsp-ui
+    :ensure t
+    :commands lsp-ui-mode
+    :config
+    (setq lsp-ui-doc-enable t)                ;; Muestra documentación emergente
+    (setq lsp-ui-doc-position 'at-point)      ;; Posición de la documentación
+    (setq lsp-ui-sideline-show-hover t))      ;; Muestra detalles al pasar el cursor
+  (setq lsp-modeline-code-actions-enable nil) ;; Bombilla
+  (setq lsp-modeline-diagnostics-enable nil)
+  (setq lsp-signature-render-documentation nil)
 
-(setq lsp-headerline-breadcrumb-enable nil)
-(setq lsp-ui-sideline-enable nil)
+  (setq lsp-headerline-breadcrumb-enable nil)
+  (setq lsp-ui-sideline-enable nil)
 #+END_SRC
 
 * Company Mode
@@ -375,28 +438,43 @@ Permite mover texto hacia arriba y abajo.
 
 * Ivy y Counsel
 
-Reemplaza Smex con Ivy y Counsel para una mejor experiencia.
+Ivy y Counsel mejoran la búsqueda tanto de buffers como de texto. 
 
 #+BEGIN_SRC emacs-lisp
-(use-package ivy
-  :ensure t
-  :bind (("M-x" . counsel-M-x)             ;; Reemplazar Smex con Counsel-M-x
-         ("C-x C-f" . counsel-find-file)   ;; Mejor búsqueda de archivos
-         ("C-c p p" . counsel-projectile-switch-project)
-         ("C-c p f" . counsel-projectile-find-file)
-         ("C-s" . swiper-isearch))
-  :config
-  (ivy-mode 1)                             ;; Activar Ivy globalmente
-  (setq ivy-use-virtual-buffers t)
-  (setq enable-recursive-minibuffers t))
+  (use-package ivy
+    :ensure t
+    :bind (
+           ;("M-x" . counsel-M-x)             ;; Reemplazar Smex con Counsel-M-x
+           ("C-x C-f" . counsel-find-file)   ;; Mejor búsqueda de archivos
+           ("C-c p p" . counsel-projectile-switch-project)
+           ("C-c p f" . counsel-projectile-find-file)
+           ("C-s" . swiper-isearch))
+    :config
+    (ivy-mode 1)                             ;; Activar Ivy globalmente
+    (setq ivy-use-virtual-buffers t)
+    (setq enable-recursive-minibuffers t))
 
-(use-package counsel
-  :ensure t)
+  (use-package counsel
+    :ensure t)
 
-(use-package counsel-projectile
-  :ensure t
-  :config
-  (counsel-projectile-mode))
+  (use-package counsel-projectile
+    :ensure t
+    :config
+    (counsel-projectile-mode))
+#+END_SRC
+
+* Smex
+
+Mejora el M-x.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package smex 
+    :ensure t
+    )
+  (global-set-key (kbd "M-x") 'smex)
+  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
+  ;; This is your old M-x.
+  (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
 #+END_SRC
 
 * Imenu List
