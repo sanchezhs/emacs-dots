@@ -58,8 +58,8 @@ Configura el tema y ajustes visuales adicionales.
     :ensure t
     :config
     ;(load-theme 'doom-dark+ t)
-    (doom-themes-visual-bell-config)
-    (doom-themes-org-config))
+    (doom-themes-visual-bell-config))
+  
 
   (use-package doom-modeline
     :ensure t
@@ -193,9 +193,14 @@ Configura Projectile para la gestión de proyectos.
     (setq projectile-keymap-prefix (kbd "M-p"))
     (projectile-mode +1)
     :config
-    (setq projectile-generic-command "rg --files --hidden"
-          projectile-grep-command "rg -n --no-heading --color=never -g '!vendor' -g '!node_modules' -g '!*.min.js' --hidden -e ")
-  )
+    ;; (setq projectile-generic-command "rg --files --asasd --hidden --glob '!.*'"
+    ;;       projectile-grep-command "rg -n --no-heading --color=never -g '!vendor' -g '!node_modules' -g '!*.min.js' --hidden -e ")
+    )
+  (setq projectile-generic-command "ag -l --nocolor --hidden --ignore .git")
+
+  (setq projectile-enable-caching t)
+  (setq projectile-indexing-method 'alien)
+  (setq projectile-file-exists-local-cache-expire (* 5 60))  ;; Cache 5 minutos
 
   (define-key projectile-mode-map (kbd "C-c p p") 'projectile-switch-project)
   (define-key projectile-mode-map (kbd "C-c p f") 'projectile-find-file)
@@ -204,6 +209,10 @@ Configura Projectile para la gestión de proyectos.
 
   (add-hook 'projectile-mode-hook #'@-set-project-env)
   (add-hook 'projectile-after-switch-project-hook #'@-set-project-env)
+
+  (use-package ripgrep
+    :ensure t
+    )
 
 #+END_SRC
 
@@ -291,6 +300,8 @@ Configura lsp-mode para varios lenguajes.
            (js-mode . lsp-deferred)
            (html-mode . lsp-deferred))
     :commands (lsp lsp-deferred)
+    :custom
+    (lsp-diagnostics-provider :none)
     :config
     (setq lsp-prefer-flymake nil)
     (setq lsp-pylsp-plugins-ruff-enabled t)
@@ -306,31 +317,49 @@ Configura lsp-mode para varios lenguajes.
 Configura Flycheck para el linting.
 
 #+BEGIN_SRC emacs-lisp
-(use-package flycheck
-  :ensure t
-  :init (global-flycheck-mode)
-  :config
-  ;; Deshabilitar checkers no deseados globalmente
-  (setq-default flycheck-disabled-checkers
-                '(python-pylint
-                  python-pycompile
-                  python-mypy
-                  python-flake8
-                  python-pycodestyle
-                  python-pyls))
+  (use-package flycheck
+    :ensure t
+    :init (global-flycheck-mode)
+    :config
+    ;; Configurar el archivo de configuración para Ruff
+    (setq flycheck-python-ruff-config "~/Documentos/tws-workspace/tws-user/backend/ruff.toml")
+  
+    ;; Deshabilitar checkers no deseados de forma consolidada
+    (setq-default flycheck-disabled-checkers
+                  '(lsp
+                    python-pylint
+                    python-pycompile
+                    python-mypy
+                    python-flake8
+                    python-pycodestyle
+                    python-pyls)))
+  ;; ;; Deshabilitar el checker 'lsp' en python-mode
+    ;; (defun my/disable-lsp-flycheck-in-python ()
+    ;;   (when (eq major-mode 'python-mode)
+    ;;     (setq-local flycheck-disabled-checkers
+    ;;                 (append flycheck-disabled-checkers '(lsp)))))
 
-  ;; Deshabilitar el checker 'lsp' en python-mode
-  (defun my/disable-lsp-flycheck-in-python ()
-    (when (eq major-mode 'python-mode)
-      (setq-local flycheck-disabled-checkers
-                  (append flycheck-disabled-checkers '(lsp)))))
+    ;; (add-hook 'flycheck-mode-hook #'my/disable-lsp-flycheck-in-python)
 
-  (add-hook 'flycheck-mode-hook #'my/disable-lsp-flycheck-in-python)
+    ;; ;; Establecer python-ruff como el checker predeterminado para python-mode
+    ;; (add-hook 'python-mode-hook
+    ;;           (lambda ()
+    ;;             (setq flycheck-checker 'python-ruff))))
 
-  ;; Establecer python-ruff como el checker predeterminado para python-mode
-  (add-hook 'python-mode-hook
-            (lambda ()
-              (setq flycheck-checker 'python-ruff))))
+    ;; (with-eval-after-load 'flycheck
+    ;;   ;; Seleccionar python-ruff como el checker predeterminado
+    ;;   (add-hook 'python-mode-hook
+    ;;             (lambda ()
+    ;;               (flycheck-select-checker 'python-ruff))))
+    ;;(flycheck-add-next-checker 'lsp 'python-ruff)  ;; Desactivar el checker lsp en Flycheck
+    ;; (setq-default flycheck-disabled-checkers '(lsp))
+
+    ;; (with-eval-after-load 'flycheck
+    ;;   ;; Añadir 'python-ruff' como el primer verificador para archivos Python
+    ;;   (add-hook 'python-mode-hook
+    ;;             (lambda ()
+    ;;               (flycheck-select-checker 'python-ruff))))
+
 #+END_SRC
 
 * LSP UI
@@ -538,4 +567,27 @@ Configura Magit para integración con Git.
   :config
   (global-set-key (kbd "C-x g") 'magit-status))
 #+END_SRC
+
+* Highlight Indent Guides 
+
+Muestra la identación
+
+#+BEGIN_SRC emacs-lisp
+  (use-package highlight-indentation
+    :ensure t
+    )
+  (set-face-background 'highlight-indentation-face "#2a2a2a")
+  (set-face-background 'highlight-indentation-current-column-face "#3a3a3a")
+  
+#+END_SRC
+
+* Ag
+
+Buscador regex
+
+#+BEGIN_SRC emacs-lisp
+  (use-package ag
+  :ensure t)
+   (global-set-key (kbd "C-x C-g") 'projectile-ag)
+ #+END_SRC
 
