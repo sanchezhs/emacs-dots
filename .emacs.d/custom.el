@@ -9,29 +9,29 @@
  '(highlight-indent-guides-method 'character)
  '(package-selected-packages
    '(ag ef-themes spacemacs-theme typescript-mode auto-package-update org-bullets company-jedi wildcharm-theme flycheck company-lsp vscode-dark-plus-theme all-the-icons-dired diredfl rainbow-delimiters smex undo-fu move-text vterm helm lsp-ui lsp-mode doom-themes spacious-padding projectile gruber-darker-theme all-the-icons dashboard doom-modeline magit python-black pyenv-mode)))
-;; (custom-set-faces
-;;  ;; custom-set-faces was added by Custom.
-;;  ;; If you edit it by hand, you could mess it up, so be careful.
-;;  ;; Your init file should contain only one such instance.
-;;  ;; If there is more than one, they won't work right.
-;;  '(fringe ((t :background "white")))
-;;  '(header-line ((t :box (:line-width 4 :color "grey90" :style nil))))
-;;  '(header-line-highlight ((t :box (:color "black"))))
-;;  '(keycast-key ((t)))
-;;  '(line-number ((t :background "white")))
-;;  '(mode-line ((t :background "white" :overline "black" :box (:line-width 4 :color "white" :style nil))))
-;;  '(mode-line-active ((t :background "white" :overline "black" :box (:line-width 4 :color "white" :style nil))))
-;;  '(mode-line-highlight ((t :box (:color "black"))))
-;;  '(mode-line-inactive ((t :background "white" :overline "grey20" :box (:line-width 4 :color "white" :style nil))))
-;;  '(tab-bar-tab ((t :box (:line-width 4 :color "grey85" :style nil))))
-;;  '(tab-bar-tab-inactive ((t :box (:line-width 4 :color "grey75" :style nil))))
-;;  '(tab-line-tab ((t)))
-;;  '(tab-line-tab-active ((t)))
-;;  '(tab-line-tab-inactive ((t)))
-;;  '(vertical-border ((t :background "white" :foreground "white")))
-;;  '(whitespace-space ((t (:foreground "gray20"))))
-;;  '(whitespace-tab ((t (:foreground "gray20"))))
-;;  '(whitespace-trailing ((t (:background "red" :foreground "yellow" :weight bold))))
-;;  '(window-divider ((t (:background "white" :foreground "white"))))
-;;  '(window-divider-first-pixel ((t (:background "white" :foreground "white"))))
-;;  '(window-divider-last-pixel ((t (:background "white" :foreground "white")))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(fringe ((t :background "unspecified-bg")))
+ '(header-line ((t :box (:line-width 4 :color "unspecified-bg" :style nil))))
+ '(header-line-highlight ((t :box (:color "unspecified-fg"))))
+ '(keycast-key ((t)))
+ '(line-number ((t :background "unspecified-bg")))
+ '(mode-line ((t :background "unspecified-bg" :overline "unspecified-fg" :box (:line-width 4 :color "unspecified-bg" :style nil))))
+ '(mode-line-active ((t :background "unspecified-bg" :overline nil :box (:line-width 4 :color "unspecified-bg" :style nil))))
+ '(mode-line-highlight ((t :box (:color "unspecified-fg"))))
+ '(mode-line-inactive ((t :background "unspecified-bg" :overline nil :box (:line-width 4 :color "unspecified-bg" :style nil))))
+ '(tab-bar-tab ((t :box (:line-width 4 :color "grey" :style nil))))
+ '(tab-bar-tab-inactive ((t :box (:line-width 4 :color "grey" :style nil))))
+ '(tab-line-tab ((t)))
+ '(tab-line-tab-active ((t)))
+ '(tab-line-tab-inactive ((t)))
+ '(vertical-border ((t :background "unspecified-bg" :foreground "unspecified-bg")))
+ '(whitespace-space ((t (:foreground "gray20"))))
+ '(whitespace-tab ((t (:foreground "gray20"))))
+ '(whitespace-trailing ((t (:background "red" :foreground "yellow" :weight bold))))
+ '(window-divider ((t (:background "unspecified-bg" :foreground "unspecified-bg"))))
+ '(window-divider-first-pixel ((t (:background "unspecified-bg" :foreground "unspecified-bg"))))
+ '(window-divider-last-pixel ((t (:background "unspecified-bg" :foreground "unspecified-bg")))))
