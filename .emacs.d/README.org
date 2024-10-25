@@ -34,53 +34,109 @@ Esta sección maneja los repositorios de paquetes y la inicialización de paquet
 Configura el tema y ajustes visuales adicionales.
 
 #+BEGIN_SRC emacs-lisp
-  (setq inhibit-startup-message t)           ;; Desactiva la pantalla de bienvenida
-  (global-display-line-numbers-mode t)       ;; Muestra los números de línea en los buffers
-  (show-paren-mode 1)                        ;; Habilitar paréntesis coincidentes
-  (delete-selection-mode 1)                  ;; Habilita el borrado de selección por defecto
-  (menu-bar-mode -1)                         ;; Deshabilita barra de menu
-  (tool-bar-mode -1)                         ;; Deshabilita barra de herramientas
-  (scroll-bar-mode -1)                       ;; Deshabilita barra scroll
-  (ido-mode t)                               ;; Habilita el autocompletado de comandos
-  (global-font-lock-mode t)                  ;; Habilitar el modo de resaltado de sintaxis
-  (global-hl-line-mode +1)                   ;; Resaltado de línea actual
+            (setq inhibit-startup-message t)           ;; Desactiva la pantalla de bienvenida
+            (global-display-line-numbers-mode t)       ;; Muestra los números de línea en los buffers
+            (show-paren-mode 1)                        ;; Habilitar paréntesis coincidentes
+            (delete-selection-mode 1)                  ;; Habilita el borrado de selección por defecto
+            (menu-bar-mode -1)                         ;; Deshabilita barra de menu
+            (tool-bar-mode -1)                         ;; Deshabilita barra de herramientas
+            (scroll-bar-mode -1)                       ;; Deshabilita barra scroll
+            (ido-mode t)                               ;; Habilita el autocompletado de comandos
+            (global-font-lock-mode t)                  ;; Habilitar el modo de resaltado de sintaxis
+            (global-hl-line-mode +1)                   ;; Resaltado de línea actual
 
-  (set-face-attribute 'minibuffer-prompt nil
-                      :foreground "cyan"     ;; Color del texto del prompt
-                      :background "black"    ;; Fondo del minibuffer
-                      :weight 'bold)         ;; Texto en negrita
+            (set-face-attribute 'minibuffer-prompt nil
+                                :foreground "cyan"     ;; Color del texto del prompt
+                                :background "black"    ;; Fondo del minibuffer
+                                :weight 'bold)         ;; Texto en negrita
 
-  (set-face-attribute 'default nil
-                      :family "JetBrains Mono"
-                      :height 100)
+            (set-face-attribute 'default nil
+                                :family "JetBrains Mono"
+                                :height 100)
 
-  (use-package doom-themes
-    :ensure t
-    :config
-    ;(load-theme 'doom-dark+ t)
-    (doom-themes-visual-bell-config))
-  
+            ;; (use-package doom-modeline
+            ;;   :ensure t
+            ;;   :init (doom-modeline-mode 1)
+            ;;   :config
+            ;;   (setq doom-modeline-vcs-max-length 40))
 
-  (use-package doom-modeline
-    :ensure t
-    :init (doom-modeline-mode 1)
-    :config
-    (setq doom-modeline-vcs-max-length 40))
+        (use-package doom-themes
+          :ensure t
+          :config
+          (load-theme 'doom-dracula t)
+          (doom-themes-visual-bell-config)
+          (doom-themes-org-config))
 
-  (use-package dashboard
-    :ensure t
-    :config
-    (dashboard-setup-startup-hook)
-    (setq dashboard-icon-type 'all-the-icons)
-    (setq dashboard-items '((recents  . 5)   ;; Muestra los archivos recientes
-                            (projects . 5))) ;; Muestra los proyectos recientes de Projectile
-    (setq dashboard-startup-banner 'logo)    ;; Mostrar un banner
-    (setq dashboard-projects-switch-function 'projectile-switch-project))
+      (use-package doom-modeline
+        :ensure t
+        :init
+        (doom-modeline-mode 1)
+        :custom
+        (doom-modeline-height 25)        ;; Aumenta la altura para una mejor visibilidad
+        (doom-modeline-bar-width 4)
+        (doom-modeline-icon t)
+        :config
+        ;; Cambiar colores y estilos de las caras
+        ;; Barra principal del modeline
+        (set-face-attribute 'mode-line nil
+                            :foreground "#f8f8f2"
+                            :background "#44475a"
+                            :box '(:line-width 1 :color "#44475a"))
+        ;; Barra inactiva
+        (set-face-attribute 'mode-line-inactive nil
+                            :foreground "#6272a4"
+                            :background "#282a36"
+                            :box '(:line-width 1 :color "#282a36"))
+        ;; Barra de estado (lado izquierdo)
+        (set-face-attribute 'doom-modeline-bar nil
+                            :background "#bd93f9")
+        ;; Iconos y textos del buffer
+        (set-face-attribute 'doom-modeline-buffer-file nil
+                            :foreground "#50fa7b"
+                            :weight 'bold)
+        (set-face-attribute 'doom-modeline-buffer-path nil
+                            :foreground "#ff79c6")
+        (set-face-attribute 'doom-modeline-buffer-major-mode nil
+                            :foreground "#8be9fd"
+                            :weight 'bold)
+        ;; Estados de Evil Mode (si lo usas)
+        (set-face-attribute 'doom-modeline-evil-normal-state nil
+                            :foreground "#50fa7b"
+                            :weight 'bold)
+        (set-face-attribute 'doom-modeline-evil-insert-state nil
+                            :foreground "#ff79c6"
+                            :weight 'bold)
+        (set-face-attribute 'doom-modeline-evil-visual-state nil
+                            :foreground "#bd93f9"
+                            :weight 'bold)
+        ;; Información de VCS (Git)
+        (set-face-attribute 'doom-modeline-info nil
+                            :foreground "#8be9fd")
+        (set-face-attribute 'doom-modeline-warning nil
+                            :foreground "#ffb86c")
+        (set-face-attribute 'doom-modeline-urgent nil
+                            :foreground "#ff5555")
+  (set-face-attribute 'doom-modeline-evil-emacs-state nil
+                        :height 1.0
+                        :inherit '(doom-modeline font-lock-builtin-face))
+    )
 
-  (use-package all-the-icons
-    :ensure t)
+
+            (use-package dashboard
+              :ensure t
+              :config
+              (dashboard-setup-startup-hook)
+              (setq dashboard-icon-type 'all-the-icons)
+              (setq dashboard-items '((recents  . 5)   ;; Muestra los archivos recientes
+                                      (projects . 5))) ;; Muestra los proyectos recientes de Projectile
+              (setq dashboard-startup-banner 'logo)    ;; Mostrar un banner
+              (setq dashboard-projects-switch-function 'projectile-switch-project))
+
+            (use-package all-the-icons
+              :ensure t)
 #+END_SRC
 
+#+RESULTS:
 
 * Comportamiento
 
@@ -96,9 +152,12 @@ Configura la indentación y el uso de tabuladores.
   (setq select-enable-clipboard t)    ;; Habilita copiar y pegar con el portapapeles
   (setq select-enable-primary t)
   (windmove-default-keybindings)      ;; Shift + flechas para moverse entre ventanas
-#+END_SRC
+  (electric-pair-mode 1)
+  (setq display-line-numbers-type 'relative) 
+  (global-display-line-numbers-mode)
+  #+END_SRC
 
-
+   
 * Configuración de Org Mode
 
 Configura Org Mode y activa org-bullets.
@@ -156,8 +215,33 @@ Ajusta la indentación y el uso de tabuladores en Python.
     :ensure t
     :after projectile
     )
+
+  ;; Hook para ejecutar ruff cuando guardes archivos Python
+  ;; (defun my-python-ruff-format ()
+  ;;   "Format the current Python buffer using ruff."
+  ;;   (when (eq major-mode 'python-mode)
+  ;;     (shell-command-to-string (format "ruff format %s" (shell-quote-argument buffer-file-name)))
+  ;;     (revert-buffer t t t)))  ;; Refresca el buffer después del formato
+
+  ;; ;; Añade el hook para formatear antes de guardar
+  ;; (add-hook 'before-save-hook 'my-python-ruff-format)
+
   #+END_SRC
 
+
+* Configuración de Go
+
+LSP, autocompletado...
+
+#+BEGIN_SRC emacs-lisp
+  (use-package go-mode
+    :ensure t)
+  (add-hook 'before-save-hook 'gofmt-before-save)
+#+END_SRC
+
+  #+RESULTS:
+  | gofmt-before-save |
+  
 * Whitespace Mode
 
 Configura la visualización de espacios y tabuladores.
@@ -470,27 +554,50 @@ Permite mover texto hacia arriba y abajo.
 Ivy y Counsel mejoran la búsqueda tanto de buffers como de texto. 
 
 #+BEGIN_SRC emacs-lisp
-  (use-package ivy
-    :ensure t
-    :bind (
-           ;("M-x" . counsel-M-x)             ;; Reemplazar Smex con Counsel-M-x
-           ("C-x C-f" . counsel-find-file)   ;; Mejor búsqueda de archivos
-           ("C-c p p" . counsel-projectile-switch-project)
-           ("C-c p f" . counsel-projectile-find-file)
-           ("C-s" . swiper-isearch))
-    :config
-    (ivy-mode 1)                             ;; Activar Ivy globalmente
-    (setq ivy-use-virtual-buffers t)
-    (setq enable-recursive-minibuffers t))
+    (use-package ivy
+      :ensure t
+      :bind (
+             ;("M-x" . counsel-M-x)             ;; Reemplazar Smex con Counsel-M-x
+             ("C-x C-f" . counsel-find-file)   ;; Mejor búsqueda de archivos
+             ("C-c p p" . counsel-projectile-switch-project)
+             ("C-c p f" . counsel-projectile-find-file)
+             ("C-s" . swiper-isearch))
+      :config
+      (ivy-mode 1)                             ;; Activar Ivy globalmente
+      (setq ivy-use-virtual-buffers t)
+      (setq enable-recursive-minibuffers t))
 
-  (use-package counsel
-    :ensure t)
+    (use-package counsel
+      :ensure t)
 
-  (use-package counsel-projectile
-    :ensure t
-    :config
-    (counsel-projectile-mode))
+    (use-package counsel-projectile
+      :ensure t
+      :config
+      (counsel-projectile-mode))
+
+    ;; Usa counsel-rg para búsquedas con ripgrep
+  (defun my-counsel-rg ()
+    "Search using ripgrep and preview the result with ivy."
+    (interactive)
+    (counsel-rg nil nil "--line-number --no-heading --color=never --smart-case"))
+
+  ;; Asignar un atajo para ejecutar el comando
+  (global-set-key (kbd "C-c p r") 'my-counsel-rg)
+
+(defun my-counsel-rg-regex ()
+  "Search using ripgrep with regular expressions."
+  (interactive)
+  (let ((search-term (read-string "Search for (regex): ")))
+    (counsel-rg search-term nil "--line-number --no-heading --color=never --smart-case --regexp")))
+
+;; Asignar un atajo para ejecutar la búsqueda con regex
+(global-set-key (kbd "C-c p R") 'my-counsel-rg-regex)
+
+  
 #+END_SRC
+
+#+RESULTS:
+: my-counsel-rg-regex
 
 * Smex
 
@@ -561,11 +668,14 @@ Configura Evil Mode para usar atajos de Vim.
 Configura Magit para integración con Git.
 
 #+BEGIN_SRC emacs-lisp
-(use-package magit
-  :ensure t
-  :commands (magit-status magit-get-current-branch)
-  :config
-  (global-set-key (kbd "C-x g") 'magit-status))
+  (use-package magit
+    :ensure t
+    :commands (magit-status magit-get-current-branch)
+    :config
+    (global-set-key (kbd "C-x g") 'magit-status))
+
+  (with-eval-after-load 'xref
+    (evil-define-key 'normal xref--xref-buffer-mode-map (kbd "RET") 'xref-goto-xref))
 #+END_SRC
 
 * Highlight Indent Guides 
@@ -633,5 +743,52 @@ Debugger
 
     (add-hook 'dap-stopped-hook
               (lambda (arg) (call-interactively #'dap-hydra))))
+  (dap-ui-mode 1)
+(setq dap-print-io t)
 
 #+END_SRC
+
+
+Python uvicorn debug
+
+#+BEGIN_SRC emacs-lisp
+          ;; Configurar dap-mode para debuggear un servidor de Unicorn en Python
+        ;;   (defun my-dap-python-unicorn ()
+        ;;     "Configuración para depurar el servidor Unicorn en Python usando dap-mode."
+        ;;     (interactive)
+        ;;     (let ((project-root (or (lsp-workspace-root)  ;; Usa lsp para obtener el root
+        ;;                             (projectile-project-root)))  ;; Usa projectile como respaldo
+        ;;           (pythonpath (getenv "PYTHONPATH")))
+        ;;       (dap-register-debug-template
+        ;;        "Python Unicorn Server"
+        ;;        (list :type "python"
+        ;;              :args "uvicornn api.rest.server:app"  ;; Ajusta el comando de gunicorn con la ruta a tu app
+        ;;              :program nil
+        ;;              :request "launch"
+        ;;              :name "Python Unicorn Debug"
+        ;;              :cwd (expand-file-name "backend" project-root)  ;; Cambia el cwd a 'backend'
+        ;;              :env `(("PYTHONPATH" . ,(or pythonpath (expand-file-name "backend" project-root))))  ;; Ajusta PYTHONPATH a backend
+        ;;              :target-module (expand-file-name "backend/api/rest/server.py" project-root)  ;; Apunta al archivo correcto dentro de backend
+        ;;              ;:console "integratedTerminal"
+        ;; ))))
+        ;;   (global-set-key (kbd "<f5>") 'my-dap-python-unicorn)  ;; Asignar F5 para iniciar la depuración
+
+  (dap-register-debug-template "Uvicorn Process"
+    (list :type "python"
+          :args "-m uvicorn api.rest.server:app --reload"  ;; Ejecuta uvicorn desde backend
+          :cwd "/home/samuel/Documentos/tws-workspace/tws-process/backend/"  ;; Directorio de trabajo
+          :env '(("PYTHONPATH" . "/home/samuel/Documentos/tws-workspace/tws-process/backend/"))  ;; Incluye backend en PYTHONPATH
+          :program nil
+          :target-module (expand-file-name "/home/samuel/Documentos/tws-workspace/tws-process/backend/api/rest/server.py")
+          :request "launch"
+          :name "My App"))
+#+END_SRC
+
+#+RESULTS:
+| Uvicorn Process                           | :type | python                                    | :args    | -m uvicorn api.rest.server:app --reload | :cwd       | /home/samuel/Documentos/tws-workspace/tws-process/backend/ | :env     | ((PYTHONPATH . /home/samuel/Documentos/tws-workspace/tws-process/backend/)) | :program | nil    | :target-module | /home/samuel/Documentos/tws-workspace/tws-process/backend/api/rest/server | :request | launch                        | :name | My App |
+| Python :: Run pytest (at point)           | :type | python                                    | :args    |                                         | :program   | nil                                                        | :module  | pytest                                                                      | :request | launch | :name          | Python :: Run pytest (at point)                                           |          |                               |       |        |
+| Python :: Run pytest (buffer)             | :type | python                                    | :args    |                                         | :cwd       | nil                                                        | :program | nil                                                                         | :module  | pytest | :request       | launch                                                                    | :name    | Python :: Run pytest (buffer) |       |        |
+| Python :: Run file from project directory | :name | Python :: Run file from project directory | :type    | python                                  | :args      |                                                            | :cwd     | ${workspaceFolder}                                                          | :module  | nil    | :program       | nil                                                                       | :request | launch                        |       |        |
+| Python :: Run file (buffer)               | :type | python                                    | :args    |                                         | :cwd       | nil                                                        | :module  | nil                                                                         | :program | nil    | :request       | launch                                                                    | :name    | Python :: Run file (buffer)   |       |        |
+| Python :: Attach to running process       | :type | python                                    | :request | attach                                  | :processId | ${command:pickProcess}                                     | :name    | Python :: Attach to running process                                         |          |        |                |                                                                           |          |                               |       |        |
+
